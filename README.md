@@ -1,85 +1,157 @@
-# MyTabBoard
+# TabBoard — Frontend
 
-An AI-powered Chrome new tab workspace that helps you plan your day, track tasks, manage workflows, and stay informed.
+**An AI-native productivity workspace built for the Chrome new tab experience.**
 
-## Overview
+TabBoard transforms the Chrome new tab page into a personalized productivity workspace, bringing task scheduling, goal management, daily planning, and information discovery into one cohesive interface.
 
-MyTabBoard transforms your browser's new tab into a personalized productivity dashboard.
+Built with React and TypeScript using the Plasmo framework, the frontend focuses on modular architecture, intuitive interactions, and a seamless browser experience.
 
-Instead of opening an empty tab, you get a smart workspace with:
+## Product Vision
 
-- ✅ Daily and weekly task planning
-- 🚀 Sprint-style workflow tracking
-- 🧠 AI-powered insights and assistance
-- 📰 Personalized news and learning feeds
-- 💻 Developer-focused information and resources
-- 📌 Notes and personal knowledge management
+Traditional productivity applications often separate task management, goal tracking, planning, and information discovery across multiple tools.
 
-## Features
+TabBoard brings these experiences together within the browser, making it easier to organize priorities, manage everyday workflows, and maintain focus.
+
+The long-term vision is to evolve TabBoard into an AI-native workspace that understands individual preferences, interests, and goals to provide personalized planning and intelligent productivity recommendations.
+
+## Core Features
 
 ### Productivity Dashboard
-- Manage daily TODOs
-- Organize weekly goals
-- Track progress and priorities
+- Personalized Chrome new tab dashboard.
+- Daily productivity overview and task progress.
+- Quick access to frequently used applications and resources.
+- Centralized workspace for everyday activities.
 
-### AI Assistant
-- Get intelligent suggestions
-- Summarize information
-- Assist with planning and decision-making
+### Task Management & Planning
+- Daily and weekly task management.
+- Scheduled tasks with defined start and end times.
+- Task prioritization and status tracking.
+- Timeline-based planning experience.
 
-### Personalized Workspace
-- Store your interests
-- Track your technology stack
-- Customize your dashboard experience
+### Goal Management
+- Organize goals across different areas of life.
+- Track progress and completion.
+- Associate tasks with long-term goals.
+- Categorize goals to support structured personal planning.
 
-### Information Hub
-- Curated AI and technology news
-- Learning resources
-- Developer updates
+### Onboarding & Personalization
+- Multi-step onboarding experience.
+- User profile and preference management.
+- Interest and personality-based personalization.
+- Structured user context for future AI-powered features.
 
-## Tech Stack
+### Information & Discovery
+- Technology and AI news.
+- Developer-focused resources.
+- Learning and discovery shortcuts.
 
-- React + TypeScript
-- Plasmo Framework
-- Chrome Extension Manifest V3
-- Tailwind CSS
-- AI APIs
-- Browser Storage APIs
+### AI-Native Experience
 
-## API and Authentication
+TabBoard is being designed with AI as an integral part of the product experience rather than an isolated chatbot.
 
-The extension uses the Django REST API at `http://127.0.0.1:8000` by default.
-Set `PLASMO_PUBLIC_API_BASE_URL` in the appropriate Plasmo environment file to
-override the base URL, for example `http://127.0.0.1:8000` for local development.
-The selected API origin must also be listed in the extension's `host_permissions`
-in `package.json` before building; add the deployed backend origin there for
-production builds.
+Planned capabilities include:
+- Personalized daily planning using onboarding information.
+- Intelligent task prioritization and recommendations.
+- Context-aware productivity assistance.
 
-Google sign-in uses the Chrome Identity API configured by
-`PLASMO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID` and the existing `oauth2.scopes` in
-`package.json`. Configure the public Chrome extension OAuth client ID and its
-extension ID in Google Cloud Console. No client secret belongs in the extension.
+*Gemini-powered personalization is part of the ongoing development roadmap.*
 
-### Onboarding
+## Frontend Architecture
 
-Run `pnpm dev` and load/reload the generated development extension to preview
-the four-step onboarding flow against Django. The frontend does not include an
-onboarding mock; the backend must be running and reachable at the configured
-API base URL.
+The application follows a modular React architecture, separating page-level features, reusable UI components, application state, and API communication.
 
-The first onboarding step collects a display name and optional bio, and shows
-the existing default avatar. Time zone is derived from the browser environment
-and is not displayed. The authenticated `GET /api/onboarding/status/` response
-provides `is_complete` for route decisions. The authenticated
-`GET /api/onboarding/` response provides `is_complete`,
-`onboarding_completed_at`, `profile`, `basic_info.questions` (question and
-option IDs, keys, text, selection rules, and saved option IDs), `interests`, and
-`personality_tags`. This full response is loaded once and cached for the flow.
+### Technology Stack
 
-Each Next/Complete action sends one authenticated `PATCH /api/onboarding/`:
-`step: "basic_info"` with profile fields; `step: "questions"` with question IDs
-and selected option IDs; `step: "interests"` with `selected_ids`; or
-`step: "personality_tags"` with `selected_ids`. The final PATCH response's
-`is_complete` and `onboarding_completed_at` determine whether the dashboard
-opens. Interest and personality selections have no client-imposed maximum; at
-least one of each is required before advancing.
+| Category | Technologies |
+|---|---|
+| Framework | React 18 |
+| Language | TypeScript |
+| Extension Framework | Plasmo 0.90.5 |
+| Platform | Chrome Extension Manifest V3 |
+| Routing | React Router |
+| State Management | Redux |
+| Icons | Lucide React |
+| Authentication | Chrome Identity API |
+| API Integration | REST APIs |
+
+## Engineering Highlights
+
+- **Modular component architecture:** Feature-oriented page organization and reusable UI components.
+- **Application state management:** Centralized state for managing shared application data.
+- **API-driven frontend:** Integration with authenticated backend endpoints for tasks, goals, profiles, and onboarding.
+- **Browser integration:** Chrome extension APIs, extension permissions, and Google OAuth authentication.
+- **Extension-specific navigation:** Hash-based routing to support navigation within the Chrome extension environment.
+- **User experience:** Interface design focused on clarity, usability, and efficient workflows.
+
+## Backend Integration
+
+The frontend communicates with a separately maintained Django REST API.
+
+The backend handles authentication, user profiles, onboarding, task management, and goal management.
+
+API configuration is managed through Plasmo environment variables:
+
+`PLASMO_PUBLIC_API_BASE_URL`
+
+Google authentication uses the Chrome Identity API and a public OAuth client ID configured through:
+
+`PLASMO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID`
+
+The configured API origin must also be included in the extension's `host_permissions`.
+
+No OAuth client secret is embedded in the extension.
+
+## Getting Started
+
+### Prerequisites
+- Node.js
+- pnpm
+- Google OAuth Chrome extension client configuration
+- Running TabBoard backend API
+
+### Installation
+
+```bash
+git clone <FRONTEND_REPOSITORY_URL>
+cd tabboard
+pnpm install
+```
+
+### Environment Configuration
+
+Configure the appropriate Plasmo environment file:
+
+```env
+PLASMO_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+PLASMO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID=your-oauth-client-id
+```
+
+Ensure the configured API origin is included in the extension's `host_permissions`.
+
+### Development
+
+```bash
+pnpm dev
+```
+
+Load the generated development extension through Chrome's Extensions page with Developer Mode enabled.
+
+The backend must be running and accessible for authentication and onboarding functionality.
+
+### Production Build
+
+```bash
+pnpm build
+```
+
+## Related Repository
+
+- **Backend:** [TabBoard API](<BACKEND_REPOSITORY_URL>)
+
+## Development Status
+
+**In Development**
+
+The frontend architecture, authentication integration, onboarding experience, and core productivity workflows are under active development.
+
+The next phase focuses on expanding the planning experience and introducing Gemini-powered personalization using the structured user context established during onboarding.
