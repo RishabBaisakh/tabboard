@@ -125,6 +125,28 @@ describe("GoalsEmptyState", () => {
     expect(html).not.toContain("Big things start with one goal.")
   })
 
+  it("explains the workflow with ordered, clearly illustrative examples", () => {
+    const html = renderToStaticMarkup(
+      <GoalsEmptyState categories={[]} onSelectCategory={() => {}} />
+    )
+
+    expect(html).toContain('<ol class="goals-how-list">')
+    for (const step of ["Set a goal", "Schedule tasks", "Track progress"]) {
+      expect(html).toContain(step)
+    }
+    expect(html.match(/EXAMPLE/g)).toHaveLength(3)
+    expect(html).toContain("Run my first 5K")
+    expect(html).toContain("Go for a 20-minute run")
+    expect(html).toContain("50%")
+    expect(html).not.toContain("Every finished task counts")
+    expect(html).not.toContain("From a little ambition")
+    expect(
+      findButtons(
+        <GoalsEmptyState categories={[]} onSelectCategory={() => {}} />
+      )
+    ).toHaveLength(0)
+  })
+
   describe("CategoryBanners images", () => {
     it.each([
       ["health_wellness", "health-wellness"],

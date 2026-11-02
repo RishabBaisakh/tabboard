@@ -8,23 +8,26 @@ import "../../styles/pages/goals-empty.css"
 
 const STEPS = [
   {
+    key: "goal",
     icon: Flag,
     title: "Set a goal",
-    text: "Define what you want to achieve.",
+    text: "Choose what you want to achieve.",
     color: "#3e6fb1",
     tint: "#eaf1fb"
   },
   {
+    key: "tasks",
     icon: CalendarCheck,
     title: "Schedule tasks",
-    text: "Make time for your next step.",
+    text: "Make time for small steps.",
     color: "#278277",
     tint: "#e6f4f1"
   },
   {
+    key: "progress",
     icon: TrendingUp,
     title: "Track progress",
-    text: "See how far you've come.",
+    text: "Complete tasks. See your progress.",
     color: "#b37a22",
     tint: "#fbf1df"
   }
@@ -42,12 +45,12 @@ export function GoalsEmptyState({
 }: GoalsEmptyStateProps) {
   return (
     <div className="goals-empty">
-      <section aria-labelledby="goals-how-title">
+      <section className="goals-how" aria-labelledby="goals-how-title">
         <h2 className="goals-empty-heading" id="goals-how-title">
           How goals work
         </h2>
-        <ul className="goals-how-list">
-          {STEPS.map(({ icon: Icon, title, text, color, tint }) => (
+        <ol className="goals-how-list">
+          {STEPS.map(({ key, icon: Icon, title, text, color, tint }, index) => (
             <li
               className="goals-how-card"
               key={title}
@@ -57,16 +60,43 @@ export function GoalsEmptyState({
                   "--how-tint": tint
                 } as React.CSSProperties
               }>
-              <span className="goals-how-icon" aria-hidden="true">
-                <Icon size={18} strokeWidth={1.9} />
-              </span>
-              <div>
+              <div className="goals-how-step" aria-hidden="true">
+                <span className="goals-how-icon">
+                  <Icon size={17} strokeWidth={1.9} />
+                </span>
+                <span>STEP {index + 1}</span>
+              </div>
+              <div className="goals-how-preview" aria-hidden="true">
+                <span className="goals-how-example">EXAMPLE</span>
+                {key === "goal" ? (
+                  <>
+                    <strong>Run my first 5K</strong>
+                  </>
+                ) : key === "tasks" ? (
+                  <>
+                    <span className="goals-how-task">
+                      <CalendarCheck size={15} />
+                      Go for a 20-minute run
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="goals-how-progress">
+                      <span className="goals-how-track">
+                        <span />
+                      </span>
+                      50%
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="goals-how-copy">
                 <h3>{title}</h3>
                 <p>{text}</p>
               </div>
             </li>
           ))}
-        </ul>
+        </ol>
       </section>
 
       {categories.length > 0 && (
