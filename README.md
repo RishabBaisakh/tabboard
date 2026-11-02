@@ -146,7 +146,7 @@ pnpm build
 
 ## Related Repository
 
-- **Backend:** [TabBoard API](<BACKEND_REPOSITORY_URL>)
+- **Backend:** [TabBoard API] https://github.com/RishabBaisakh/tabboard-api.git
 
 ## Development Status
 
