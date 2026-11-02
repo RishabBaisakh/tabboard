@@ -7,16 +7,19 @@ import {
   Trash2
 } from "lucide-react"
 import { useEffect, useRef, useState, type FormEvent } from "react"
+import { Link, useNavigate, useParams } from "react-router-dom"
 
 import { CategoryBanners } from "../../components/goals/CategoryBanners"
 import { CategoryGrid } from "../../components/goals/CategoryGrid"
 import { ConfirmDialog } from "../../components/goals/ConfirmDialog"
 import { GoalCategoryBadge } from "../../components/goals/GoalCategoryBadge"
+import { GoalCategoryBoard } from "../../components/goals/GoalCategoryBoard"
 import { GoalsEmptyState } from "../../components/goals/GoalsEmptyState"
 import { ApiError } from "../../services/api"
 import { buildGoalPayload, getGoalFormValues } from "../../services/goalForm"
 import {
   DEFAULT_GOAL_TIMELINE,
+  getGoalProgress,
   getGoalStatus,
   getGoalTimelineLabel,
   GOAL_TIMELINE_OPTIONS,
@@ -115,6 +118,9 @@ function getServerFieldErrors(error: unknown): Record<string, string> {
 
 function GoalsPage() {
   const dispatch = useAppDispatch()
+  const { goalId } = useParams<{ goalId: string }>()
+  const navigate = useNavigate()
+  const isDetailsPage = goalId !== undefined
   const goals = useAppSelector(selectAllGoals)
   const tasks = useAppSelector(selectAllTasks)
   const goalsStatus = useAppSelector(selectGoalsStatus)
@@ -159,12 +165,13 @@ function GoalsPage() {
   const [deleteError, setDeleteError] = useState("")
 
   useEffect(() => {
-    void dispatch(loadGoals(selectedCategory))
+    void dispatch(loadGoals(goalId ? null : selectedCategory))
     void dispatch(loadTasks())
     void dispatch(loadGoalCategories())
-    // Only on mount: later category changes are dispatched by the filter handler.
+    setExpandedGoals(goalId ? new Set([Number(goalId)]) : new Set())
+    // Category changes on the overview are dispatched by the filter handler.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch])
+  }, [dispatch, goalId])
 
   useEffect(() => {
     if (isDialogOpen && step === 1) headingRef.current?.focus()
@@ -223,6 +230,7 @@ function GoalsPage() {
       await dispatch(removeGoal(goalToDelete.id)).unwrap()
       setSaveMessage("Goal deleted.")
       setGoalToDelete(null)
+      if (isDetailsPage) navigate("/goals")
     } catch (error) {
       setDeleteError(
         error instanceof Error
@@ -305,6 +313,7 @@ function GoalsPage() {
   }
 
   const filteredGoals = goals.filter((goal) => {
+    if (isDetailsPage) return String(goal.id) === goalId
     if (filter === "All") return true
     const goalTasks = tasks.filter((task) => task.goal === goal.id)
     return getGoalStatus(goal, goalTasks) === filter.toLowerCase()
@@ -314,7 +323,12 @@ function GoalsPage() {
     <section className="goals-page" aria-labelledby="goals-title">
       <header className="page-header goals-page-header">
         <div>
-          <h1 id="goals-title">Goals</h1>
+          {isDetailsPage && (
+            <Link className="goal-back-link" to="/goals">
+              Back to goals
+            </Link>
+          )}
+          <h1 id="goals-title">{isDetailsPage ? "Goal details" : "Goals"}</h1>
           <p className="page-subtitle">
             Set your goals and track your progress.
           </p>
@@ -328,7 +342,7 @@ function GoalsPage() {
         </button> */}
       </header>
 
-      {categoriesReady && unfilteredCount !== 0 && (
+      {!isDetailsPage && categoriesReady && unfilteredCount !== 0 && (
         <CategoryBanners
           compact
           categories={categories}
@@ -336,7 +350,7 @@ function GoalsPage() {
         />
       )}
 
-      {hasGoals && (
+      {!isDetailsPage && hasGoals && (
         <div
           className="goals-filter-row"
           role="group"
@@ -395,6 +409,14 @@ function GoalsPage() {
             Try again
           </button>
         </div>
+      ) : isDetailsPage && selectedCategory !== null ? (
+        <p className="goals-state-message" role="status">
+          Loading goal...
+        </p>
+      ) : isDetailsPage && filteredGoals.length === 0 ? (
+        <p className="goals-state-message" role="alert">
+          Goal not found. It may have been deleted.
+        </p>
       ) : goals.length === 0 &&
         selectedCategory !== null &&
         unfilteredCount !== 0 ? (
@@ -433,19 +455,18 @@ function GoalsPage() {
             onSelectCategory={(key) => openCreateDialog(key)}
           />
         </>
+      ) : !isDetailsPage ? (
+        <GoalCategoryBoard
+          key={`${filter}:${selectedCategory ?? ""}`}
+          categories={categories}
+          goals={filteredGoals}
+          tasks={tasks}
+        />
       ) : (
-        <div className="goal-list" aria-label={`${filter} goals`}>
+        <div className="goal-details" aria-label="Goal details">
           {filteredGoals.map((goal) => {
             const goalTasks = tasks.filter((task) => task.goal === goal.id)
-            const progress =
-              goalTasks.length === 0
-                ? 0
-                : Math.round(
-                    (goalTasks.filter((task) => task.status === "completed")
-                      .length /
-                      goalTasks.length) *
-                      100
-                  )
+            const progress = getGoalProgress(goalTasks)
             const hasTasks = goalTasks.length > 0
             const isExpanded = expandedGoals.has(goal.id)
             const goalStatus = getGoalStatus(goal, goalTasks)

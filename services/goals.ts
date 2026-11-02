@@ -71,6 +71,16 @@ export function getGoalStatus(goal: Goal, tasks: Task[]): GoalStatus {
     : "active"
 }
 
+export function getGoalProgress(tasks: Task[]) {
+  return tasks.length === 0
+    ? 0
+    : Math.round(
+        (tasks.filter((task) => task.status === "completed").length /
+          tasks.length) *
+          100
+      )
+}
+
 export function createGoalsService(api: Pick<ApiClient, "request">) {
   return {
     list({ category }: GoalListParams = {}): Promise<Goal[]> {

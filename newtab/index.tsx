@@ -40,6 +40,7 @@ export default function NewTab() {
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/planner" element={<PlannerPage />} />
                 <Route path="/goals" element={<GoalsPage />} />
+                <Route path="/goals/:goalId" element={<GoalsPage />} />
                 <Route path="/tasks" element={<TasksPage />} />
                 <Route path="/newsandinsights" element={<NewsInsightsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
