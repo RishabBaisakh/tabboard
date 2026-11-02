@@ -3,9 +3,11 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
 import type { Goal, GoalCategory } from "../../services/goals"
+import { CategoryBanners } from "./CategoryBanners"
 import { CategoryGrid } from "./CategoryGrid"
 import { getCategoryVisual } from "./categoryVisuals"
 import { GoalCategoryBadge } from "./GoalCategoryBadge"
+import { GoalsEmptyState } from "./GoalsEmptyState"
 
 // Names deliberately differ from any hardcoded copy to prove they come from the API.
 const categories: GoalCategory[] = [
@@ -107,6 +109,65 @@ describe("CategoryGrid", () => {
     expect(getCategoryVisual("health_wellness")).not.toBe(
       getCategoryVisual(null)
     )
+  })
+})
+
+describe("GoalsEmptyState", () => {
+  it("keeps the how-goals-work section and uses full category banners", () => {
+    const html = renderToStaticMarkup(
+      <GoalsEmptyState categories={categories} onSelectCategory={() => {}} />
+    )
+
+    expect(html).toContain("How goals work")
+    expect(html).toContain("Set a goal")
+    expect(html).toContain("goals2-list")
+    expect(html).toContain("API Health")
+    expect(html).not.toContain("Big things start with one goal.")
+  })
+
+  describe("CategoryBanners images", () => {
+    it.each([
+      ["health_wellness", "health-wellness"],
+      ["career_learning", "career-learning"],
+      ["family_relationships", "family-relationships"],
+      ["financial_life", "financial-life"],
+      ["travel_experiences", "travel-experiences"],
+      ["personal_life", "personal-life"]
+    ])("uses the matching image for %s in both layouts", (key, filename) => {
+      const category = { key, name: key, description: "Category description" }
+
+      for (const compact of [false, true]) {
+        const html = renderToStaticMarkup(
+          <CategoryBanners categories={[category]} compact={compact} />
+        )
+        expect(html).toContain(`${filename}.png`)
+        expect(html.match(/<img /g)).toHaveLength(compact ? 1 : 2)
+        expect(html).not.toContain("<svg")
+        expect(html).toContain('alt=""')
+      }
+    })
+
+    it("keeps a generic icon for unknown categories", () => {
+      const html = renderToStaticMarkup(
+        <CategoryBanners categories={[categories[2]]} />
+      )
+      expect(html).toContain("<svg")
+      expect(html).not.toContain("<img")
+    })
+  })
+
+  it("continues to select a category from its banner", () => {
+    const onSelectCategory = vi.fn()
+    const buttons = findButtons(
+      <GoalsEmptyState
+        categories={categories}
+        onSelectCategory={onSelectCategory}
+      />
+    )
+
+    expect(buttons).toHaveLength(categories.length)
+    ;(buttons[1].props as { onClick: () => void }).onClick()
+    expect(onSelectCategory).toHaveBeenCalledWith("personal_life")
   })
 })
 

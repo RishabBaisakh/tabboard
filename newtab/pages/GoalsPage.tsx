@@ -8,6 +8,7 @@ import {
 } from "lucide-react"
 import { useEffect, useRef, useState, type FormEvent } from "react"
 
+import { CategoryBanners } from "../../components/goals/CategoryBanners"
 import { CategoryGrid } from "../../components/goals/CategoryGrid"
 import { ConfirmDialog } from "../../components/goals/ConfirmDialog"
 import { GoalCategoryBadge } from "../../components/goals/GoalCategoryBadge"
@@ -131,6 +132,7 @@ function GoalsPage() {
   const categoriesError = useAppSelector(selectGoalCategoriesError)
   const selectedCategory = useAppSelector(selectGoalsCategory)
   const unfilteredCount = useAppSelector(selectGoalsUnfilteredCount)
+  const hasGoals = (unfilteredCount ?? goals.length) > 0
   const categoriesReady = categoriesStatus === "succeeded"
   const [category, setCategory] = useState<string | null>(null)
   const [filter, setFilter] = useState<GoalFilter>("Active")
@@ -317,44 +319,56 @@ function GoalsPage() {
             Set your goals and track your progress.
           </p>
         </div>
-        <button
+        {/* <button
           className="goals-add-button"
           type="button"
           onClick={() => openCreateDialog()}>
           <Plus size={17} aria-hidden="true" />
           Add Goal
-        </button>
+        </button> */}
       </header>
 
-      <div className="goals-filter-row" role="group" aria-label="Filter goals">
-        {(["Active", "Completed", "All"] as const).map((option) => (
-          <button
-            className="goals-filter-button"
-            key={option}
-            type="button"
-            aria-pressed={filter === option}
-            onClick={() => setFilter(option)}>
-            {option}
-          </button>
-        ))}
-      </div>
-
       {categoriesReady && unfilteredCount !== 0 && (
-        <label className="goals-category-filter">
-          Category
-          <select
-            value={selectedCategory ?? ""}
-            onChange={(event) =>
-              changeCategoryFilter(event.currentTarget.value)
-            }>
-            <option value="">All categories</option>
-            {categories.map((option) => (
-              <option key={option.key} value={option.key}>
-                {option.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <CategoryBanners
+          compact
+          categories={categories}
+          onSelect={(key) => openCreateDialog(key)}
+        />
+      )}
+
+      {hasGoals && (
+        <div
+          className="goals-filter-row"
+          role="group"
+          aria-label="Filter goals">
+          {(["Active", "Completed", "All"] as const).map((option) => (
+            <button
+              className="goals-filter-button"
+              key={option}
+              type="button"
+              aria-pressed={filter === option}
+              onClick={() => setFilter(option)}>
+              {option}
+            </button>
+          ))}
+          {categoriesReady && (
+            <label className="goals-category-filter">
+              Category
+              <select
+                value={selectedCategory ?? ""}
+                onChange={(event) =>
+                  changeCategoryFilter(event.currentTarget.value)
+                }>
+                <option value="">All categories</option>
+                {categories.map((option) => (
+                  <option key={option.key} value={option.key}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
       )}
 
       {saveMessage && (
@@ -391,18 +405,11 @@ function GoalsPage() {
               ?.name ?? "this category"}{" "}
             yet.
           </p>
-          <button
-            className="goals-retry-button"
-            type="button"
-            onClick={() => changeCategoryFilter("")}>
-            Show all goals
-          </button>
         </div>
       ) : goals.length === 0 ? (
         <>
           <GoalsEmptyState
             categories={categoriesReady ? categories : []}
-            onCreate={() => openCreateDialog()}
             onSelectCategory={(key) => openCreateDialog(key)}
           />
           {categoriesStatus === "failed" && (
@@ -423,7 +430,6 @@ function GoalsPage() {
           <p className="goals-empty-state">No {filter.toLowerCase()} goals.</p>
           <GoalsEmptyState
             categories={categoriesReady ? categories : []}
-            onCreate={() => openCreateDialog()}
             onSelectCategory={(key) => openCreateDialog(key)}
           />
         </>
@@ -663,17 +669,6 @@ function GoalsPage() {
                   </span>
                   {categoriesReady ? (
                     <>
-                      {editingGoal && (
-                        <CategoryGrid
-                          categories={categories}
-                          selectedKey={category}
-                          onSelect={(key) =>
-                            setCategory((current) =>
-                              current === key ? null : key
-                            )
-                          }
-                        />
-                      )}
                       <select
                         aria-labelledby="goal-category-label"
                         value={category ?? ""}
