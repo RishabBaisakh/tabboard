@@ -17,7 +17,7 @@ export function GoalSummaryCard({
 }: GoalSummaryCardProps) {
   return (
     <article className="goal-card goal-summary-card">
-      <GoalCategoryBadge goal={goal} />
+      {/* <GoalCategoryBadge goal={goal} /> */}
       <h2>{goal.title}</h2>
       <div
         className="goal-progress-circle"

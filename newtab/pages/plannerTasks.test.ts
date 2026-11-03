@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import type { Task } from "../../services/tasks"
-import { getDayTimelineItems, getWeekItems } from "./plannerTasks"
+import { getDayTimelineItems } from "./plannerTasks"
 
 function makeTask(
   id: string,
@@ -66,41 +66,5 @@ describe("getDayTimelineItems", () => {
   it("does not duplicate a task that appears once", () => {
     const task = makeTask("a", new Date(2026, 9, 21, 9, 0), 30)
     expect(getDayTimelineItems([task])).toHaveLength(1)
-  })
-})
-
-describe("getWeekItems", () => {
-  it("lists tasks in start order with their weekday", () => {
-    const tasks = [
-      makeTask("sun", new Date(2026, 9, 25, 9, 0), 30),
-      makeTask("mon", new Date(2026, 9, 19, 9, 0), 30)
-    ]
-    const items = getWeekItems(tasks, day)
-    expect(items.map((item) => item.id)).toEqual(["mon", "sun"])
-    expect(items.map((item) => item.day)).toEqual(["MON", "SUN"])
-  })
-
-  it("places a cross-midnight task in each day column it overlaps", () => {
-    const items = getWeekItems(
-      [makeTask("x", new Date(2026, 9, 21, 23, 0), 120)],
-      day
-    )
-    expect(items.map((item) => item.day)).toEqual(["WED", "THU"])
-  })
-
-  it("does not spill a task ending exactly at midnight into the next day", () => {
-    const items = getWeekItems(
-      [makeTask("x", new Date(2026, 9, 21, 22, 0), 120)],
-      day
-    )
-    expect(items.map((item) => item.day)).toEqual(["WED"])
-  })
-
-  it("clamps a task spilling in from the previous week to Monday", () => {
-    const items = getWeekItems(
-      [makeTask("x", new Date(2026, 9, 18, 23, 0), 120)],
-      day
-    )
-    expect(items.map((item) => item.day)).toEqual(["MON"])
   })
 })

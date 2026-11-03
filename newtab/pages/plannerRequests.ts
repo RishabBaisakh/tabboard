@@ -1,19 +1,9 @@
 import type { Task, TaskListParams } from "../../services/tasks"
-import {
-  addCalendarDays,
-  getLocalDate,
-  getWeekStart,
-  toLocalDateValue
-} from "./plannerCalendar"
+import { getLocalDate, toLocalDateValue } from "./plannerCalendar"
 
 export function getDayRange(date: Date): Required<TaskListParams> {
   const day = getLocalDate(date)
   return { startDate: day, endDate: day }
-}
-
-export function getWeekRange(date: Date): Required<TaskListParams> {
-  const start = getWeekStart(date)
-  return { startDate: start, endDate: addCalendarDays(start, 6) }
 }
 
 // Stable string for effect dependencies.

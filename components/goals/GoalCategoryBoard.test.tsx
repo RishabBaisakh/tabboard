@@ -4,7 +4,7 @@ import { StaticRouter } from "react-router-dom"
 import { describe, expect, it } from "vitest"
 
 import type { Goal, GoalCategory } from "../../services/goals"
-import { getGoalPage, GoalCategoryBoard } from "./GoalCategoryBoard"
+import { GoalCategoryBoard } from "./GoalCategoryBoard"
 
 const categories: GoalCategory[] = [
   { key: "health_wellness", name: "Health & Wellness", description: "" },
@@ -37,33 +37,21 @@ function renderBoard(items = goals) {
 }
 
 describe("GoalCategoryBoard", () => {
-  it("renders only populated category rows with six goals per page", () => {
+  it("renders only populated category rows with every goal in a sliding row", () => {
     const html = renderBoard()
     expect(html.match(/class="goal-category-column"/g)).toHaveLength(1)
     expect(html).not.toContain("Career &amp; Learning")
-    expect(html.match(/class="goal-card goal-summary-card"/g)).toHaveLength(6)
+    expect(html.match(/class="goal-card goal-summary-card"/g)).toHaveLength(13)
     expect(html).toContain("--category-tint:#fbeaed")
-    expect(html).toContain("Next")
-    expect(html).toContain("Previous")
-    expect(html).toContain("1 / 3")
-    expect(html).not.toContain('href="/goals/7"')
+    expect(html.match(/class="goal-category-viewport"/g)).toHaveLength(1)
+    expect(html.match(/class="goal-category-stack"/g)).toHaveLength(1)
+    expect(html).toContain("13 goals")
+    expect(html).toContain('href="/goals/7"')
+    expect(html).toContain('href="/goals/13"')
   })
 
   it("renders no category rows when there are no matching goals", () => {
     expect(renderBoard([])).not.toContain('class="goal-category-column"')
-  })
-
-  it("paginates without skipping or duplicating goals and clamps stale pages", () => {
-    const pages = [0, 1, 2].map((page) => getGoalPage(goals, page))
-    expect(pages.map((page) => page.items.length)).toEqual([6, 6, 1])
-    expect(pages.flatMap((page) => page.items)).toEqual(goals)
-    expect(getGoalPage(goals.slice(0, 2), 2).page).toBe(0)
-    expect(getGoalPage(goals, -1).page).toBe(0)
-    expect(getGoalPage([], 1).items).toEqual([])
-  })
-
-  it("omits pagination for six or fewer goals", () => {
-    expect(renderBoard(goals.slice(0, 6))).not.toContain("Next")
   })
 
   it("preserves uncategorized and unknown-category goals", () => {

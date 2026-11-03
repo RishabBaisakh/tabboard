@@ -1,4 +1,5 @@
-import React, { useState } from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 
 import {
   getGoalProgress,
@@ -10,18 +11,6 @@ import type { Task } from "../../services/tasks"
 import { getCategoryVisual } from "./categoryVisuals"
 import { GoalSummaryCard } from "./GoalSummaryCard"
 
-const PAGE_SIZE = 6
-
-export function getGoalPage(goals: Goal[], requestedPage: number) {
-  const pageCount = Math.max(1, Math.ceil(goals.length / PAGE_SIZE))
-  const page = Math.max(0, Math.min(requestedPage, pageCount - 1))
-  return {
-    page,
-    pageCount,
-    items: goals.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
-  }
-}
-
 function CategoryColumn({
   category,
   goals,
@@ -31,9 +20,44 @@ function CategoryColumn({
   goals: Goal[]
   tasks: Task[]
 }) {
-  const [requestedPage, setPage] = useState(0)
-  const { page, pageCount, items } = getGoalPage(goals, requestedPage)
+  const stackRef = useRef<HTMLDivElement>(null)
+  const [canSlideBack, setCanSlideBack] = useState(false)
+  const [canSlideForward, setCanSlideForward] = useState(false)
   const { color, tint } = getCategoryVisual(category.key)
+
+  const updateSlideState = useCallback(() => {
+    const stack = stackRef.current
+    if (!stack) return
+    const maxScroll = stack.scrollWidth - stack.clientWidth
+    setCanSlideBack(stack.scrollLeft > 1)
+    setCanSlideForward(stack.scrollLeft < maxScroll - 1)
+  }, [])
+
+  useEffect(() => {
+    updateSlideState()
+    const stack = stackRef.current
+    if (!stack || typeof ResizeObserver === "undefined") return
+    const observer = new ResizeObserver(updateSlideState)
+    observer.observe(stack)
+    return () => observer.disconnect()
+  }, [updateSlideState, goals.length])
+
+  const slide = (direction: -1 | 1) => {
+    const stack = stackRef.current
+    if (!stack) return
+    stack.scrollBy({
+      left: direction * stack.clientWidth * 0.9,
+      behavior: "smooth"
+    })
+  }
+
+  const viewportClass = [
+    "goal-category-viewport",
+    canSlideBack ? "can-slide-back" : "",
+    canSlideForward ? "can-slide-forward" : ""
+  ]
+    .filter(Boolean)
+    .join(" ")
 
   return (
     <section
@@ -47,51 +71,53 @@ function CategoryColumn({
       }>
       <header className="goal-category-heading">
         <h2>{category.name}</h2>
-        <span>{goals.length}</span>
+        <span className="goal-category-count">
+          {goals.length} {goals.length === 1 ? "goal" : "goals"}
+        </span>
       </header>
-      <div
-        className="goal-category-stack"
-        role="group"
-        aria-label={`${category.name} goal cards`}
-        tabIndex={items.length > 0 ? 0 : undefined}
-        aria-live="polite">
-        {items.length === 0 ? (
-          <p className="goal-category-no-goals">No matching goals.</p>
-        ) : (
-          items.map((goal) => {
-            const goalTasks = tasks.filter((task) => task.goal === goal.id)
-            return (
-              <GoalSummaryCard
-                key={goal.id}
-                goal={goal}
-                progress={getGoalProgress(goalTasks)}
-                status={getGoalStatus(goal, goalTasks)}
-              />
-            )
-          })
+      <div className={viewportClass}>
+        {canSlideBack && (
+          <button
+            type="button"
+            className="goal-category-arrow is-back"
+            aria-label={`Show previous ${category.name} goals`}
+            onClick={() => slide(-1)}>
+            <ChevronLeft size={20} aria-hidden="true" />
+          </button>
+        )}
+        <div
+          ref={stackRef}
+          className="goal-category-stack"
+          role="group"
+          aria-label={`${category.name} goal cards`}
+          tabIndex={goals.length > 0 ? 0 : undefined}
+          onScroll={updateSlideState}>
+          {goals.length === 0 ? (
+            <p className="goal-category-no-goals">No matching goals.</p>
+          ) : (
+            goals.map((goal) => {
+              const goalTasks = tasks.filter((task) => task.goal === goal.id)
+              return (
+                <GoalSummaryCard
+                  key={goal.id}
+                  goal={goal}
+                  progress={getGoalProgress(goalTasks)}
+                  status={getGoalStatus(goal, goalTasks)}
+                />
+              )
+            })
+          )}
+        </div>
+        {canSlideForward && (
+          <button
+            type="button"
+            className="goal-category-arrow is-forward"
+            aria-label={`Show more ${category.name} goals`}
+            onClick={() => slide(1)}>
+            <ChevronRight size={20} aria-hidden="true" />
+          </button>
         )}
       </div>
-      {pageCount > 1 && (
-        <nav
-          className="goal-category-pagination"
-          aria-label={`${category.name} pages`}>
-          <button
-            type="button"
-            disabled={page === 0}
-            onClick={() => setPage(page - 1)}>
-            Previous
-          </button>
-          <span aria-live="polite">
-            {page + 1} / {pageCount}
-          </span>
-          <button
-            type="button"
-            disabled={page === pageCount - 1}
-            onClick={() => setPage(page + 1)}>
-            Next
-          </button>
-        </nav>
-      )}
     </section>
   )
 }
@@ -130,7 +156,7 @@ export function GoalCategoryBoard({
         .filter((group) => group.goals.length > 0)
         .map(({ category, goals: categoryGoals }) => (
           <CategoryColumn
-            key={`${category.key}:${categoryGoals.map((goal) => goal.id).join(",")}`}
+            key={category.key}
             category={category}
             goals={categoryGoals}
             tasks={tasks}

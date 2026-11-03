@@ -16,8 +16,8 @@ import { PROFILE_AVATAR_URL } from "../profileAvatar"
 const links = [
   { label: "Dashboard", path: "/", icon: LayoutDashboard },
   { label: "Planner", path: "/planner", icon: CalendarDays },
-  { label: "Tasks", path: "/tasks", icon: ListTodo },
   { label: "Goals", path: "/goals", icon: Target },
+  { label: "Tasks", path: "/tasks", icon: ListTodo },
   { label: "News & Insights", path: "/newsandinsights", icon: Newspaper },
   { label: "Settings", path: "/settings", icon: Settings }
 ]

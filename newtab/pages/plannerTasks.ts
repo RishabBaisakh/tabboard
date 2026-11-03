@@ -3,7 +3,6 @@ import {
   type Task,
   type TaskStatus
 } from "../../services/tasks"
-import { addCalendarDays, getLocalDate, getWeekStart } from "./plannerCalendar"
 
 export type PlannerTone = "blue" | "teal" | "amber" | "coral"
 
@@ -17,14 +16,7 @@ export type PlannerTimelineItem = {
   done: boolean
 }
 
-export type PlannerWeekItem = {
-  id: string
-  day: string
-  title: string
-  done: boolean
-}
-
-const STATUS_TONES: Record<TaskStatus, PlannerTone> = {
+export const STATUS_TONES: Record<TaskStatus, PlannerTone> = {
   completed: "teal",
   cancelled: "coral",
   in_progress: "blue",
@@ -45,7 +37,7 @@ function parseSchedule(task: Task) {
   return { start, end: Number.isNaN(end.getTime()) ? null : end }
 }
 
-function formatTime(date: Date) {
+export function formatTaskTime(date: Date) {
   return date.toLocaleTimeString(undefined, {
     hour: "numeric",
     minute: "2-digit"
@@ -74,48 +66,13 @@ export function getScheduledTasks(tasks: Task[]) {
 export function getDayTimelineItems(tasks: Task[]): PlannerTimelineItem[] {
   return getScheduledTasks(tasks).map(({ task, schedule }) => ({
     id: task.id,
-    time: formatTime(schedule.start),
+    time: formatTaskTime(schedule.start),
     timeRange: schedule.end
-      ? `${formatTime(schedule.start)} – ${formatTime(schedule.end)}`
-      : formatTime(schedule.start),
+      ? `${formatTaskTime(schedule.start)} – ${formatTaskTime(schedule.end)}`
+      : formatTaskTime(schedule.start),
     title: task.title,
     detail: task.description || STATUS_LABELS[task.status],
     tone: STATUS_TONES[task.status],
     done: isTaskCompleted(task)
   }))
-}
-
-// A task crossing midnight is listed once per local day it overlaps within the week.
-export function getWeekItems(tasks: Task[], date: Date): PlannerWeekItem[] {
-  const weekStart = getWeekStart(date)
-  const weekEnd = addCalendarDays(weekStart, 6)
-  const items: PlannerWeekItem[] = []
-
-  for (const { task, schedule } of getScheduledTasks(tasks)) {
-    const startDay = getLocalDate(schedule.start)
-    // The end instant is exclusive, so an end exactly at midnight belongs to the previous day.
-    const lastInstant =
-      schedule.end && schedule.end > schedule.start
-        ? new Date(schedule.end.getTime() - 1)
-        : schedule.start
-    const endDay = getLocalDate(lastInstant)
-    // Clamp so tasks the server returned for a UTC-adjacent day still appear in the week.
-    let day = startDay < weekStart ? weekStart : startDay
-    const last = endDay > weekEnd ? weekEnd : endDay
-    if (day > last) day = last < weekStart ? weekStart : last
-
-    do {
-      items.push({
-        id: task.id,
-        day: day
-          .toLocaleDateString("en-US", { weekday: "short" })
-          .toUpperCase(),
-        title: task.title,
-        done: isTaskCompleted(task)
-      })
-      day = addCalendarDays(day, 1)
-    } while (day <= last)
-  }
-
-  return items
 }
