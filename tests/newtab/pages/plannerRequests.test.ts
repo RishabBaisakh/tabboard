@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { taskListPath } from "../../services/tasks"
-import { createLatestGuard, getDayRange, rangeKey } from "./plannerRequests"
+import { taskListPath } from "../../../services/tasks"
+import { createLatestGuard, getDayRange, rangeKey } from "../../../newtab/pages/plannerRequests"
 
 describe("planner request ranges", () => {
   it("daily view sends the selected day as start and end", () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { ApiClient, type AuthTokens, type TokenStorage } from "./api"
-import { createAuthService } from "./auth"
+import { ApiClient, type AuthTokens, type TokenStorage } from "../../services/api"
+import { createAuthService } from "../../services/auth"
 
 class MemoryTokenStorage implements TokenStorage {
   tokens: AuthTokens | null = null

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import type { Task } from "../../services/tasks"
-import { getDayTimelineItems } from "./plannerTasks"
+import type { Task } from "../../../services/tasks"
+import { getDayTimelineItems } from "../../../newtab/pages/plannerTasks"
 
 function makeTask(
   id: string,

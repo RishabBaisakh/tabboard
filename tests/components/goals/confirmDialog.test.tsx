@@ -2,7 +2,7 @@ import React from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { ConfirmDialog } from "./ConfirmDialog"
+import { ConfirmDialog } from "../../../components/goals/ConfirmDialog"
 
 function buttons(element: React.ReactElement) {
   const found: React.ReactElement<{

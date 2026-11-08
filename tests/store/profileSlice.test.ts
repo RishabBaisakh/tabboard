@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import type { ProfileFields } from "../services/profile"
-import profileReducer, { profileUpdated } from "./profileSlice"
+import type { ProfileFields } from "../../services/profile"
+import profileReducer, { profileUpdated } from "../../store/profileSlice"
 
 describe("profile slice", () => {
   it("keeps the display name shared after a profile save", () => {

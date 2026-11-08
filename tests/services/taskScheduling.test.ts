@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   calculateTaskSchedule,
   getTaskScheduleFormValues
-} from "./taskScheduling"
+} from "../../services/taskScheduling"
 
 describe("task scheduling", () => {
   it("calculates timezone-aware timestamps and rolls an overnight duration forward", () => {

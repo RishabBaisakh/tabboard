@@ -1,23 +1,23 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import { ApiError } from "../services/api"
-import type { Goal } from "../services/goals"
-import type { Task } from "../services/tasks"
-import goalsReducer, { loadGoals, removeGoal } from "./goalsSlice"
-import tasksReducer, { loadTasks } from "./tasksSlice"
+import { ApiError } from "../../services/api"
+import type { Goal } from "../../services/goals"
+import type { Task } from "../../services/tasks"
+import goalsReducer, { loadGoals, removeGoal } from "../../store/goalsSlice"
+import tasksReducer, { loadTasks } from "../../store/tasksSlice"
 
 const { list, deleteGoal } = vi.hoisted(() => ({
   list: vi.fn(),
   deleteGoal: vi.fn()
 }))
 
-vi.mock("../services/goals", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../services/goals")>()),
+vi.mock("../../services/goals", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../services/goals")>()),
   goalsService: { list, deleteGoal }
 }))
-vi.mock("../services/tasks", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../services/tasks")>()),
+vi.mock("../../services/tasks", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../services/tasks")>()),
   tasksService: { list: vi.fn().mockResolvedValue([]) }
 }))
 
@@ -49,7 +49,7 @@ function task(id: string, goalId: number | null): Task {
 }
 
 async function setup() {
-  const { tasksService } = await import("../services/tasks")
+  const { tasksService } = await import("../../services/tasks")
   vi.mocked(tasksService.list).mockResolvedValue([task("a", 1), task("b", 2)])
   list.mockResolvedValue([goal(1), goal(2)])
   const store = configureStore({

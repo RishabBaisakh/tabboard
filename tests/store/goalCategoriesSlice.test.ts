@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { Goal } from "../services/goals"
+import type { Goal } from "../../services/goals"
 import goalCategoriesReducer, {
   loadGoalCategories
-} from "./goalCategoriesSlice"
-import goalsReducer, { goalCreated, goalUpdated, loadGoals } from "./goalsSlice"
+} from "../../store/goalCategoriesSlice"
+import goalsReducer, { goalCreated, goalUpdated, loadGoals } from "../../store/goalsSlice"
 
 const { list, deleteGoal, getGoalCategories } = vi.hoisted(() => ({
   list: vi.fn(),
@@ -13,8 +13,8 @@ const { list, deleteGoal, getGoalCategories } = vi.hoisted(() => ({
   getGoalCategories: vi.fn()
 }))
 
-vi.mock("../services/goals", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../services/goals")>()),
+vi.mock("../../services/goals", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../services/goals")>()),
   goalsService: { list, deleteGoal },
   getGoalCategories
 }))

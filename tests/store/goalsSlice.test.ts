@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import type { Task } from "../services/tasks"
-import { selectIncompleteGoals } from "./goalsSlice"
+import type { Task } from "../../services/tasks"
+import { selectIncompleteGoals } from "../../store/goalsSlice"
 
 const tasks: Task[] = [
   {

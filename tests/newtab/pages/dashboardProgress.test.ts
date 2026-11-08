@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { isTaskCompleted, taskListPath } from "../../services/tasks"
-import { getDayRange } from "./plannerRequests"
+import { isTaskCompleted, taskListPath } from "../../../services/tasks"
+import { getDayRange } from "../../../newtab/pages/plannerRequests"
 
 describe("dashboard today progress", () => {
   it("counts only the completed status as complete", () => {

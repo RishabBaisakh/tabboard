@@ -3,8 +3,8 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { StaticRouter } from "react-router-dom"
 import { describe, expect, it } from "vitest"
 
-import type { Goal, GoalCategory } from "../../services/goals"
-import { GoalCategoryBoard } from "./GoalCategoryBoard"
+import type { Goal, GoalCategory } from "../../../services/goals"
+import { GoalCategoryBoard } from "../../../components/goals/GoalCategoryBoard"
 
 const categories: GoalCategory[] = [
   { key: "health_wellness", name: "Health & Wellness", description: "" },

@@ -2,12 +2,12 @@ import React from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import type { Goal, GoalCategory } from "../../services/goals"
-import { CategoryBanners } from "./CategoryBanners"
-import { CategoryGrid } from "./CategoryGrid"
-import { getCategoryVisual } from "./categoryVisuals"
-import { GoalCategoryBadge } from "./GoalCategoryBadge"
-import { GoalsEmptyState } from "./GoalsEmptyState"
+import type { Goal, GoalCategory } from "../../../services/goals"
+import { CategoryBanners } from "../../../components/goals/CategoryBanners"
+import { CategoryGrid } from "../../../components/goals/CategoryGrid"
+import { getCategoryVisual } from "../../../components/goals/categoryVisuals"
+import { GoalCategoryBadge } from "../../../components/goals/GoalCategoryBadge"
+import { GoalsEmptyState } from "../../../components/goals/GoalsEmptyState"
 
 // Names deliberately differ from any hardcoded copy to prove they come from the API.
 const categories: GoalCategory[] = [

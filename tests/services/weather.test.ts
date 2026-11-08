@@ -4,7 +4,7 @@ import {
   fetchCurrentWeather,
   getWeatherCondition,
   parseCurrentWeather
-} from "./weather"
+} from "../../services/weather"
 
 describe("weather service", () => {
   it("maps WMO codes to conditions with an unknown fallback", () => {

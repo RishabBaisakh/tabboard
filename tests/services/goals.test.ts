@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { ApiClient, type AuthTokens, type TokenStorage } from "./api"
+import { ApiClient, type AuthTokens, type TokenStorage } from "../../services/api"
 import {
   createGoalsService,
   getGoalTimelineLabel,
   isValidDateValue
-} from "./goals"
+} from "../../services/goals"
 
 class MemoryTokenStorage implements TokenStorage {
   tokens: AuthTokens | null = {

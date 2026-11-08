@@ -3,8 +3,8 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { StaticRouter } from "react-router-dom"
 import { describe, expect, it } from "vitest"
 
-import type { Goal } from "../../services/goals"
-import { GoalSummaryCard } from "./GoalSummaryCard"
+import type { Goal } from "../../../services/goals"
+import { GoalSummaryCard } from "../../../components/goals/GoalSummaryCard"
 
 const goal: Goal = {
   id: 12,

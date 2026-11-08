@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { addCalendarDays, formatPlannerDay } from "./plannerCalendar"
+import { addCalendarDays, formatPlannerDay } from "../../../newtab/pages/plannerCalendar"
 
 function localDate(year: number, month: number, day: number) {
   return new Date(year, month - 1, day)

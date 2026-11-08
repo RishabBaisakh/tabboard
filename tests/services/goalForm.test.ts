@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { buildGoalPayload, getGoalFormValues } from "./goalForm"
-import type { Goal } from "./goals"
+import { buildGoalPayload, getGoalFormValues } from "../../services/goalForm"
+import type { Goal } from "../../services/goals"
 
 const today = "2026-10-20"
 

@@ -5,12 +5,12 @@ import { Provider } from "react-redux"
 import { Route, Routes, StaticRouter } from "react-router-dom"
 import { describe, expect, it, vi } from "vitest"
 
-import type { Goal } from "../../services/goals"
-import goalCategoriesReducer from "../../store/goalCategoriesSlice"
-import goalsReducer from "../../store/goalsSlice"
-import profileReducer from "../../store/profileSlice"
-import tasksReducer from "../../store/tasksSlice"
-import GoalsPage from "./GoalsPage"
+import type { Goal } from "../../../services/goals"
+import goalCategoriesReducer from "../../../store/goalCategoriesSlice"
+import goalsReducer from "../../../store/goalsSlice"
+import profileReducer from "../../../store/profileSlice"
+import tasksReducer from "../../../store/tasksSlice"
+import GoalsPage from "../../../newtab/pages/GoalsPage"
 
 vi.stubGlobal("React", React)
 

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest"
 
-import type { Task } from "../../services/tasks"
+import type { Task } from "../../../services/tasks"
 import {
   getDayGridEvents,
   getHourLabels,
   getTimeZoneOffsetLabel,
   MINUTES_PER_DAY
-} from "./plannerDayGrid"
+} from "../../../newtab/pages/plannerDayGrid"
 
 function makeTask(
   id: string,

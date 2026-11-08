@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { ApiClient, ApiError, type AuthTokens, type TokenStorage } from "./api"
+import { ApiClient, ApiError, type AuthTokens, type TokenStorage } from "../../services/api"
 import {
   createTasksService,
   formatLocalDate,
   taskListPath,
   type Task,
   type TaskWriteFields
-} from "./tasks"
+} from "../../services/tasks"
 
 class MemoryTokenStorage implements TokenStorage {
   tokens: AuthTokens | null = {
