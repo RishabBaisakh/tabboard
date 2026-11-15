@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom"
 
 import { useAppDispatch } from "../../store/hooks"
 import { loadProfile } from "../../store/profileSlice"
+import { GlobalAIWidget } from "../ai/GlobalAIWidget"
 import { Sidebar } from "./Sidebar"
 
 const SIDEBAR_COLLAPSED_KEY = "tabboard.sidebarCollapsed"
@@ -31,6 +32,7 @@ export function AppLayout() {
       <main className="main-content">
         <Outlet />
       </main>
+      <GlobalAIWidget />
     </div>
   )
 }
