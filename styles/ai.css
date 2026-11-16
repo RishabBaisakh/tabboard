@@ -124,74 +124,106 @@
   line-height: 1.6;
 }
 
-.daily-planner-input {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
-  padding: 14px;
-  border: 1px solid var(--blue-700);
-  border-radius: 12px;
-  background: var(--blue-950);
-}
-
-.daily-planner-input:hover,
-.daily-planner-input:focus-within {
-  border-color: #7494c3;
-}
-
-.daily-planner-input textarea {
-  width: 100%;
-  min-height: 96px;
-  padding: 0;
-  resize: vertical;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: var(--blue-100);
-  line-height: 1.5;
-}
-
-.daily-planner-input textarea::placeholder {
-  color: #8299ba;
-}
-
-.daily-planner-submit {
-  display: grid;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  place-items: center;
-  border: 0;
-  border-radius: 9px;
-  background: #3869a8;
-  color: #fff;
-  cursor: pointer;
-}
-
-.daily-planner-submit:hover {
-  background: #477cbe;
-}
-
 .global-ai-trigger:focus-visible,
 .daily-planner-close:focus-visible,
-.daily-planner-submit:focus-visible {
+.daily-planner-body :is(button, input, textarea):focus-visible {
   outline: 2px solid #8bb5f0;
   outline-offset: 3px;
 }
 
-.daily-planner-hint {
+.daily-planner-form,
+.daily-planner-commitments,
+.daily-planner-form label,
+.daily-planner-review li {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
-  margin-top: 16px;
-  color: #9eb4d2;
-  font-size: 12px;
+}
+
+.daily-planner-form {
+  gap: 16px;
+}
+
+.daily-planner-form :is(input, textarea) {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--blue-700);
+  border-radius: 8px;
+  background: var(--blue-950);
+  color: var(--blue-100);
+  font: inherit;
+}
+
+.daily-planner-form textarea {
+  resize: vertical;
+}
+
+.daily-planner-form small {
+  color: var(--blue-300);
   line-height: 1.4;
 }
 
-.daily-planner-hint svg {
-  flex-shrink: 0;
+.daily-planner-form fieldset {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--blue-700);
+  border-radius: 8px;
+}
+
+.daily-planner-body button {
+  align-self: flex-start;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #3869a8;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+}
+
+.daily-planner-body button:hover:not(:disabled) {
+  background: #477cbe;
+}
+
+.daily-planner-body button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.daily-planner-review {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgb(169 200 245 / 14%);
+}
+
+.daily-planner-review ul {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.daily-planner-review li {
+  padding: 12px;
+  border: 1px solid var(--blue-700);
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+
+.daily-planner-error {
+  margin-bottom: 20px;
+  padding: 12px;
+  border: 1px solid #d88383;
+  border-radius: 8px;
+  color: #ffd5d5;
+}
+
+.daily-planner-error pre {
+  margin-bottom: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 @media (prefers-reduced-motion: reduce) {

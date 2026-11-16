@@ -49,8 +49,9 @@ The long-term vision is to evolve TabBoard into an AI-native workspace that unde
 
 TabBoard is being designed with AI as an integral part of the product experience rather than an isolated chatbot.
 
-Planned capabilities include:
-- Personalized daily planning using onboarding information.
+The Daily Planner can generate a draft from a date and optional commitments, preferences, and instructions. Review and approve the draft to create tasks; generating a draft alone does not create tasks.
+
+Other planned capabilities include:
 - Intelligent task prioritization and recommendations.
 - Context-aware productivity assistance.
 
