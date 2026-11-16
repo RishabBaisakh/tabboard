@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   DailyPlannerDialog,
+  formatPlanTimestamp,
   generationInput
 } from "../../../components/ai/DailyPlannerDialog"
 import { GlobalAIWidget } from "../../../components/ai/GlobalAIWidget"
@@ -43,7 +44,8 @@ describe("Daily Planner", () => {
       end: "2026-11-16T10:00:00-05:00"
     }
     expect(generationInput("2026-11-16", [], "", "")).toEqual({
-      planning_date: "2026-11-16"
+      planning_date: "2026-11-16",
+      additional_instructions: ""
     })
     expect(
       generationInput(
@@ -81,5 +83,30 @@ describe("Daily Planner", () => {
     expect(() => generationInput("2026-11-16", [], "{", "")).toThrow(
       "valid JSON"
     )
+  })
+
+  it("formats plan timestamps in the requested timezone, including DST", () => {
+    const options: Intl.DateTimeFormatOptions = {
+      timeZone: "America/New_York",
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short"
+    }
+    for (const value of ["2026-01-16T15:00:00Z", "2026-07-16T15:00:00Z"]) {
+      expect(formatPlanTimestamp(value, "America/New_York")).toBe(
+        new Date(value).toLocaleString(undefined, options)
+      )
+      expect(formatPlanTimestamp(value, "America/New_York")).not.toBe(
+        formatPlanTimestamp(value, "UTC")
+      )
+    }
+    expect(formatPlanTimestamp("invalid", "UTC")).toContain("Invalid timestamp")
+    expect(
+      formatPlanTimestamp("2026-01-16T15:00:00Z", "Invalid/Zone")
+    ).toContain("Unable to display in time zone")
   })
 })

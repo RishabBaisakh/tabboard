@@ -9,7 +9,7 @@ import {
   type PlanningWindow
 } from "../../services/dailyPlanner"
 import { formatLocalDate, type Task } from "../../services/tasks"
-import { useAppDispatch } from "../../store/hooks"
+import { useAppDispatch, useAppSelector } from "../../store/hooks"
 import { taskUpdated } from "../../store/tasksSlice"
 
 type DailyPlannerDialogProps = {
@@ -19,6 +19,8 @@ type DailyPlannerDialogProps = {
 type PlannerError = {
   message: string
   details?: string
+  status?: number
+  action?: "load" | "generate" | "approve"
 }
 
 function describeError(
@@ -49,7 +51,32 @@ function describeError(
         ? error.payload
         : JSON.stringify(error.payload, null, 2)
       : undefined
-  return { message: messages[error.status] ?? error.message, details }
+  return {
+    message: messages[error.status] ?? error.message,
+    details,
+    status: error.status,
+    action
+  }
+}
+
+export function formatPlanTimestamp(value: string, timeZone: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return `Invalid timestamp: ${value}`
+  try {
+    return date.toLocaleString(undefined, {
+      timeZone,
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short"
+    })
+  } catch (error) {
+    if (!(error instanceof RangeError)) throw error
+    return `${value} (Unable to display in time zone ${timeZone})`
+  }
 }
 
 export function generationInput(
@@ -78,9 +105,11 @@ export function generationInput(
     }
   }
 
-  const input: GenerateDailyPlanInput = { planning_date: planningDate }
+  const input: GenerateDailyPlanInput = {
+    planning_date: planningDate,
+    additional_instructions: instructions
+  }
   if (commitments.length) input.commitments = commitments
-  if (instructions) input.additional_instructions = instructions
   if (preferences.trim()) {
     let parsed: unknown
     try {
@@ -98,7 +127,11 @@ export function generationInput(
 
 export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const requestInFlight = useRef(false)
   const dispatch = useAppDispatch()
+  const profileTimeZone = useAppSelector(
+    (state) => state.profile.profile?.time_zone
+  )
   const [planningDate, setPlanningDate] = useState(() =>
     formatLocalDate(new Date())
   )
@@ -112,6 +145,7 @@ export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
   >("loading")
   const [error, setError] = useState<PlannerError | null>(null)
   const [pendingChecked, setPendingChecked] = useState(false)
+  const [draftUnavailable, setDraftUnavailable] = useState(false)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -119,21 +153,25 @@ export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
 
     dialog.showModal()
     let active = true
+    requestInFlight.current = true
     dailyPlannerService.pending().then(
       (pending) => {
         if (!active) return
+        requestInFlight.current = false
         setDraft(pending)
         setPendingChecked(true)
         setOperation("idle")
       },
       (failure: unknown) => {
         if (!active) return
+        requestInFlight.current = false
         setError(describeError(failure, "load"))
         setOperation("idle")
       }
     )
     return () => {
       active = false
+      requestInFlight.current = false
       dialog.close()
     }
   }, [])
@@ -145,7 +183,7 @@ export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
 
   async function generate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (operation !== "idle") return
+    if (requestInFlight.current) return
     setError(null)
     let input: GenerateDailyPlanInput
     try {
@@ -159,22 +197,32 @@ export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
       setError(describeError(failure, "generate"))
       return
     }
+    requestInFlight.current = true
     setOperation("generating")
     try {
       const generated = await dailyPlannerService.generate(input)
       setDraft(generated)
+      setDraftUnavailable(false)
       setApprovedTasks(null)
       setPendingChecked(true)
     } catch (failure) {
       setError(describeError(failure, "generate"))
     } finally {
+      requestInFlight.current = false
       setOperation("idle")
     }
   }
 
   async function approve() {
-    if (!draft || draft.status !== "pending" || operation !== "idle") return
+    if (
+      !draft ||
+      draft.status !== "pending" ||
+      requestInFlight.current ||
+      draftUnavailable
+    )
+      return
     setError(null)
+    requestInFlight.current = true
     setOperation("approving")
     try {
       const result = await dailyPlannerService.approve(draft.id)
@@ -182,8 +230,34 @@ export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
       setDraft(result.draft)
       setApprovedTasks(result.tasks)
     } catch (failure) {
+      if (
+        failure instanceof ApiError &&
+        (failure.status === 404 || failure.status === 409)
+      ) {
+        setDraftUnavailable(true)
+      }
       setError(describeError(failure, "approve"))
     } finally {
+      requestInFlight.current = false
+      setOperation("idle")
+    }
+  }
+
+  async function refreshPending() {
+    if (requestInFlight.current) return
+    requestInFlight.current = true
+    setOperation("loading")
+    setError(null)
+    try {
+      const pending = await dailyPlannerService.pending()
+      setDraft(pending)
+      setDraftUnavailable(false)
+      setApprovedTasks(null)
+      setPendingChecked(true)
+    } catch (failure) {
+      setError(describeError(failure, "load"))
+    } finally {
+      requestInFlight.current = false
       setOperation("idle")
     }
   }
@@ -201,6 +275,9 @@ export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
   }
 
   const busy = operation !== "idle"
+  const timeZone = profileTimeZone || draft?.time_zone || ""
+  const generationTimedOut =
+    error?.action === "generate" && error.status === 504
 
   return (
     <dialog
@@ -237,13 +314,24 @@ export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
             <p role="status">Generating draft...</p>
           )}
           {operation === "approving" && <p role="status">Approving draft...</p>}
-          {pendingChecked && !draft && (
+          {pendingChecked && !draft && !error && operation === "idle" && (
             <p>No pending draft. Generate a plan to get started.</p>
           )}
           {error && (
             <div className="daily-planner-error" role="alert">
               <strong>{error.message}</strong>
               {error.details && <pre>{error.details}</pre>}
+              {generationTimedOut && (
+                <p>
+                  A draft may still have been created. Retry only if you want to
+                  generate another draft.
+                </p>
+              )}
+              {(draftUnavailable || error.action === "load") && (
+                <button type="button" disabled={busy} onClick={refreshPending}>
+                  Refresh pending draft
+                </button>
+              )}
             </div>
           )}
 
@@ -333,7 +421,11 @@ export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
               </button>
             </div>
             <button type="submit" disabled={busy}>
-              {operation === "generating" ? "Generating..." : "Generate draft"}
+              {operation === "generating"
+                ? "Generating..."
+                : generationTimedOut
+                  ? "Retry generation"
+                  : "Generate draft"}
             </button>
           </form>
 
@@ -345,7 +437,7 @@ export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
                 {draft.status === "approved" ? "Approved plan" : "Review draft"}
               </h3>
               <p>
-                {draft.date} · {draft.time_zone}
+                {draft.date} · {timeZone}
               </p>
               <p>{draft.plan.summary}</p>
               {draft.plan.scheduled_tasks.length === 0 ? (
@@ -356,7 +448,8 @@ export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
                     <li key={index}>
                       <strong>{task.title}</strong>
                       <span>
-                        {task.start_time} – {task.end_time}
+                        {formatPlanTimestamp(task.start_time, timeZone)} –{" "}
+                        {formatPlanTimestamp(task.end_time, timeZone)}
                       </span>
                       <span>Priority: {task.priority}</span>
                       {task.description && <span>{task.description}</span>}
@@ -371,8 +464,11 @@ export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
                 </ul>
               )}
               {draft.status === "pending" && (
-                <button type="button" disabled={busy} onClick={approve}>
-                  {operation === "approving" ? "Approving..." : "Approve draft"}
+                <button
+                  type="button"
+                  disabled={busy || draftUnavailable}
+                  onClick={approve}>
+                  {operation === "approving" ? "Approving..." : "Approve Plan"}
                 </button>
               )}
             </section>
@@ -389,13 +485,17 @@ export function DailyPlannerDialog({ onClose }: DailyPlannerDialogProps) {
                     <li key={task.id}>
                       <strong>{task.title}</strong>
                       <span>
-                        {task.scheduled_start} – {task.scheduled_end}
+                        {formatPlanTimestamp(task.scheduled_start, timeZone)} –{" "}
+                        {formatPlanTimestamp(task.scheduled_end, timeZone)}
                       </span>
                       <span>Priority: {task.priority}</span>
                     </li>
                   ))}
                 </ul>
               )}
+              <button type="button" onClick={dismiss}>
+                Done
+              </button>
             </section>
           )}
         </div>

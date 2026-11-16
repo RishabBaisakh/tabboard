@@ -73,7 +73,7 @@ describe("daily planner service", () => {
       payload: { detail: "Not found." }
     })
 
-    for (const status of [400, 409, 502, 503, 504]) {
+    for (const status of [400, 401, 409, 502, 503, 504]) {
       const error = new ApiError("Failed", status, {
         errors: [{ message: "Invalid" }]
       })
